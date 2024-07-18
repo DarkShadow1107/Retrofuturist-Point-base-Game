@@ -2123,8 +2123,8 @@ function createAboutWindow() {
 	$aboutWindow.$content.html(`
 		<div style="padding:0 2em;">
 			<h1>Retrofuturist Point-base Game</h1>
-			<p>Made by <a href="https://isaiahodhner.io">Isaiah Odhner</a>.</p>
-			<p>Open source on <a href="https://github.com/1j01/pbj-sandbox">GitHub</a>, MIT licensed.</p>
+			<p>Made by <a href="https://github.com/DarkShadow1107">DarkShadow1107</a>.</p>
+			<p>Open source on <a href="https://github.com/DarkShadow1107/Retrofuturist-Point-base-Game">GitHub</a>, MIT licensed.</p>
 		</div>
 	`);
 	positionElement($aboutWindow[0], "top");
