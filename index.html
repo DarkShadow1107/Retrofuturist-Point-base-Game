@@ -1,0 +1,425 @@
+<!DOCTYPE html>
+<html lang="en">
+	<head>
+		<meta charset="utf-8" />
+		<title>Retrofuturist Point-base Game</title>
+		<meta name="viewport" content="initial-scale=1, maximum-scale=1" />
+		<style>
+			body,
+			html {
+				width: 100%;
+				height: 100%;
+				padding: 0;
+				margin: 0;
+				border: 0;
+				overflow: hidden;
+				font-family: sans-serif;
+			}
+
+			#always-available-controls {
+				position: absolute;
+				top: 0;
+				left: 0;
+			}
+
+			kbd {
+				display: inline-block;
+				vertical-align: baseline;
+				border: 1px solid rgba(128, 128, 128, 0.8);
+				border-radius: 3px;
+				padding: 2px 5px;
+			}
+
+			button {
+				margin: 2px;
+				padding: 4px;
+				vertical-align: bottom;
+			}
+
+			h3 {
+				margin-top: 8px;
+				margin-bottom: 3px;
+			}
+
+			label {
+				display: block;
+			}
+
+			label:not(:last-child) {
+				margin-bottom: 3px;
+			}
+
+			.padded {
+				padding: 5px;
+				line-height: 1.8em;
+			}
+
+			.tools-window .window-content button {
+				width: 200px;
+			}
+
+			input[type="number"] {
+				width: 50px;
+			}
+
+			.window-content {
+				padding: 5px;
+				overflow: auto;
+			}
+
+			.window-content button {
+				min-width: 100px;
+				padding-left: 20px;
+				padding-right: 20px;
+				white-space: nowrap;
+				user-select: none;
+			}
+
+			/* 98.css defines this, but I'm including it here to use it for all themes */
+			.field-row {
+				display: flex;
+				align-items: center;
+			}
+			.field-row-stacked {
+				display: flex;
+				flex-direction: column;
+			}
+			/* 98.css normally has this on label generally but I made it more specific (in my custom build and here) */
+			.field-row label {
+				display: inline-flex;
+				align-items: center;
+			}
+
+			/* this wrapper is used for retrofuturist theme, but needs to be defined for all themes (given that it's in the DOM) */
+			.select-wrapper {
+				display: inline-block;
+			}
+		</style>
+		<link rel="stylesheet" href="lib/os-gui/layout.css" />
+		<link rel="stylesheet" href="theme/windows-98-theme.css" id="windows-98-theme" disabled />
+		<link rel="stylesheet" href="theme/retrofuturist-theme.css" id="retrofuturist-theme" />
+		<link rel="stylesheet" href="theme/sandbox-theme.css" id="sandbox-theme" disabled />
+		<script src="lib/jquery-3.6.0.slim.js"></script>
+		<script src="lib/os-gui/$Window.js"></script>
+		<script src="lib/arson.js"></script>
+	</head>
+
+	<body>
+		<!-- "window-content" here is a hack so I don't have to change all the scoped CSS -->
+		<div id="always-available-controls" class="window-content">
+			<button id="tools-button" title="Switch between interaction modes, such as dragging or shape-adding.">
+				<span>
+					<img
+						style="display: none; vertical-align: middle"
+						class="for-win98-only"
+						src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAMAAAAoLQ9TAAAANlBMVEUAAACBgICAgYCAgIGAgIABAAD///7//////v8AAAD+///AwMDBwMDAwMHAwcAAAAGAgAD//wDZ76ZXAAAAEnRSTlMA//////////////////////9ewYY+AAAAWUlEQVR4nKXOQQ6AMAgEQIorFNGW/v+zRq2J7dU9kclCIKLERAsDK/VAwCIq2TqkDZ73o7B0gdfqxVFNHzEzAmDX9J65cYj5DDpBxAihOu6EtrES7T98Pj0B7MwDnan62uIAAAAASUVORK5CYII="
+					/>
+					Tools
+				</span>
+			</button>
+			<button id="options-button" title="Change simulation settings, audio, and UI theme.">
+				<span>
+					<img
+						style="display: none; vertical-align: middle"
+						class="for-win98-only"
+						src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQBAMAAADt3eJSAAAABGdBTUEAALGPC/xhBQAAACBjSFJNAAB6JgAAgIQAAPoAAACA6AAAdTAAAOpgAAA6mAAAF3CculE8AAAAFVBMVEUAAACAgIAAAADAwMD///+AgAD//wCscRewAAAAAXRSTlMAQObYZgAAAAFiS0dEBI9o2VEAAAAHdElNRQfiBhoAMxjAu68UAAAAZElEQVQI12MQBAMFBgZhYxBAYRgKikAZSiZQhkqooTCYoRym6KSqwCBs4qKa6BQGZBiKqgBFlECKw5yU3IJAjKCUlCQQQ1ktyDUMrDhUKVU1CWSFklGQkgIDyG4hIM2gBAYKDACD1RTJ+pL33QAAACV0RVh0ZGF0ZTpjcmVhdGUAMjAxOC0wNi0yNlQwMDo1MToyNC0wNDowMKiPG6cAAAAldEVYdGRhdGU6bW9kaWZ5ADIwMTgtMDYtMjZUMDA6NTE6MjQtMDQ6MDDZ0qMbAAAAAElFTkSuQmCC"
+					/>
+					Options
+				</span>
+			</button>
+			<button id="help-button" title="Get help on using this application." aria-keyshortcuts="F1">
+				<span>
+					<img
+						style="display: none; vertical-align: middle"
+						class="for-win98-only"
+						src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQBAMAAADt3eJSAAAABGdBTUEAALGPC/xhBQAAACBjSFJNAAB6JgAAgIQAAPoAAACA6AAAdTAAAOpgAAA6mAAAF3CculE8AAAAGFBMVEUAAACAgAD//wDAwMCAgIAAAAD///8AAIAx3LzMAAAAAXRSTlMAQObYZgAAAAFiS0dEBmFmuH0AAAAHdElNRQfiBBMBJCWbWhFOAAAAY0lEQVQI12NgAAJBQQEQxcCopGQIZggpKSk7gAUUhZQCGFxcXJVMnIEMtzTTUJEgMCMtrVRJGcxwFVIyZWBwS3FxEwIKgKVEXBwgIqkg00AioqECEBGQbrAInAGWcg0FAqBaABADGWWRey3DAAAAJXRFWHRkYXRlOmNyZWF0ZQAyMDE4LTA0LTE5VDAxOjM2OjM3LTA0OjAwK/YzVAAAACV0RVh0ZGF0ZTptb2RpZnkAMjAxOC0wNC0xOVQwMTozNjozNy0wNDowMFqri+gAAAAASUVORK5CYII="
+					/>
+					Help
+				</span>
+			</button>
+			<button id="about-button" title="Show information about this application.">
+				<span>
+					<img
+						style="display: none; vertical-align: middle"
+						class="for-win98-only"
+						src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQBAMAAADt3eJSAAAABGdBTUEAALGPC/xhBQAAACBjSFJNAAB6JgAAgIQAAPoAAACA6AAAdTAAAOpgAAA6mAAAF3CculE8AAAAElBMVEUAAACAgID///8AAAAAAP/AwMBf5JN4AAAAAXRSTlMAQObYZgAAAAFiS0dEAmYLfGQAAAAHdElNRQfiBhoAKi6UAZOVAAAAX0lEQVQI11XNwQ3AIAgF0G9cQBo7QD/1rjEuYNzA/Xcp2vTQf+EFAgAQkQCLkNQMOHJ0zo3YqQEHV1I2XDZiWZ34x7mRim3dY3DaybaWisE3pirrh2+6q0nDC9QPzvAAK9gNFiZoqz4AAAAldEVYdGRhdGU6Y3JlYXRlADIwMTgtMDYtMjZUMDA6NDI6NDYtMDQ6MDDTxmfKAAAAJXRFWHRkYXRlOm1vZGlmeQAyMDE4LTA2LTI2VDAwOjQyOjQ2LTA0OjAwopvfdgAAAABJRU5ErkJggg=="
+					/>
+					About
+				</span>
+			</button>
+			<button id="todo-button" title="See noted future improvements.">
+				<span>
+					<img
+						style="display: none; vertical-align: middle"
+						class="for-win98-only"
+						src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQBAMAAADt3eJSAAAABGdBTUEAALGPC/xhBQAAACBjSFJNAAB6JgAAgIQAAPoAAACA6AAAdTAAAOpgAAA6mAAAF3CculE8AAAAGFBMVEUAAACAgIAAAAD//8DAwMAA//8AgID////Kljo+AAAAAXRSTlMAQObYZgAAAAFiS0dEBxZhiOsAAAAHdElNRQfiBhoALSurKvHdAAAAVklEQVQI12NgQABGQSAQAjGMgcCJgUmBSRnMUA1SDYIwkoKSlEAMtSSlJKgaNQiDgQGqGKxdCMwQNjZWVhKCMkyEwDJGJoIKQIazi6KgEshSJSBAcgMAsbwPxcOTRf0AAAAldEVYdGRhdGU6Y3JlYXRlADIwMTgtMDYtMjZUMDA6NDU6NDMtMDQ6MDBjIlMUAAAAJXRFWHRkYXRlOm1vZGlmeQAyMDE4LTA2LTI2VDAwOjQ1OjQzLTA0OjAwEn/rqAAAAABJRU5ErkJggg=="
+					/>
+					Todo
+				</span>
+			</button>
+		</div>
+		<script>
+			// Hack: There's no global window creation / close event in the os-gui library, yet.
+			// This is just for animation on window creation / close.
+			// Note that this makes it impossible to prevent windows from closing, as we always prevent it and then force it to close.
+			let old_$Window = $Window;
+			$Window = function (...args) {
+				let $w = old_$Window(...args);
+				// Windows 98 didn't have these animations!
+				// But note that the theme can change while windows are open.
+				if (window.windowTheme !== "windows-98-theme") {
+					$w.css({
+						opacity: 0,
+						transition: "none",
+					});
+					setTimeout(() => {
+						$w.css({
+							transition: "opacity 0.2s ease-in-out",
+						});
+						setTimeout(() => {
+							$w.css({
+								opacity: 1,
+							});
+						}, 0);
+					}, 0);
+				}
+				$w.on("close", (event) => {
+					if (window.windowTheme === "windows-98-theme") {
+						return;
+					}
+					$w.closed = "CLOSED OR CLOSING";
+					event.preventDefault();
+					$w.addClass("closing");
+					$w.css({
+						transition: "opacity .3s ease-out, transform .3s ease-out",
+						opacity: 0,
+						transform: "scale(0.9)",
+					});
+					setTimeout(() => {
+						// $w.remove();
+						$w.close(true); // generates a "closed" event
+					}, 5100);
+				});
+				return $w;
+			};
+		</script>
+
+		<script src="main.js"></script>
+
+		<script>
+			// helper for software demos
+			// display keystrokes in a list that fade away after a bit
+			function visualizeKeystrokes() {
+				var useSymbols = false;
+				var maxListLength = 10;
+
+				var ul = document.createElement("ul");
+				ul.className = "keystrokes";
+				document.body.appendChild(ul);
+
+				var modifiers = [
+					{ name: "Ctrl", symbol: "⌃", key: "Control", prop: "ctrlKey" },
+					{ name: "Alt", symbol: "⌥", key: "Alt", prop: "altKey" },
+					{ name: "Shift", symbol: "⇧", key: "Shift", prop: "shiftKey" },
+					{ name: "Meta", symbol: "⌘", key: "Meta", prop: "metaKey" },
+				];
+				var keyNames = {
+					Backspace: useSymbols ? "⌫" : "Backspace",
+					Tab: useSymbols ? "⇥" : "Tab",
+					Enter: useSymbols ? "⏎" : "Enter",
+					Escape: useSymbols ? "⎋" : "Escape",
+					Space: useSymbols ? "␣" : "Space",
+					Delete: useSymbols ? "⌦" : "Delete",
+					Home: useSymbols ? "⇱" : "Home",
+					End: useSymbols ? "⇲" : "End",
+					PageUp: useSymbols ? "⇞" : "Page Up",
+					PageDown: useSymbols ? "⇟" : "Page Down",
+					ArrowLeft: "←",
+					ArrowUp: "↑",
+					ArrowRight: "→",
+					ArrowDown: "↓",
+					Insert: useSymbols ? "⌤" : "Insert",
+					NumLock: useSymbols ? "⌘" : "NumLock",
+					CapsLock: useSymbols ? "⇪" : "CapsLock",
+					ScrollLock: useSymbols ? "⇧" : "ScrollLock",
+					Backquote: "`",
+					Backslash: "\\",
+					Comma: ",",
+					Minus: "-",
+					Period: ".",
+					Slash: "/",
+					Semicolon: ";",
+					Equal: "=",
+					BracketLeft: "[",
+					BracketRight: "]",
+					Quote: "'",
+					Escape: "Esc",
+					Digit1: "1",
+					Digit2: "2",
+					Digit3: "3",
+					Digit4: "4",
+					Digit5: "5",
+					Digit6: "6",
+					Digit7: "7",
+					Digit8: "8",
+					Digit9: "9",
+					Digit0: "0",
+					KeyQ: "Q",
+					KeyW: "W",
+					KeyE: "E",
+					KeyR: "R",
+					KeyT: "T",
+					KeyY: "Y",
+					KeyU: "U",
+					KeyI: "I",
+					KeyO: "O",
+					KeyP: "P",
+					KeyA: "A",
+					KeyS: "S",
+					KeyD: "D",
+					KeyF: "F",
+					KeyG: "G",
+					KeyH: "H",
+					KeyJ: "J",
+					KeyK: "K",
+					KeyL: "L",
+					KeyZ: "Z",
+					KeyX: "X",
+					KeyC: "C",
+					KeyV: "V",
+					KeyB: "B",
+					KeyN: "N",
+					KeyM: "M",
+					IntlBackslash: "\\", // what is this?
+					IntlRo: "ろ",
+					IntlYen: "¥",
+				};
+
+				function renderListItem(li, event, showNonModifier) {
+					li.textContent = "";
+					for (const modifier of modifiers) {
+						if (event[modifier.prop]) {
+							const kbd = document.createElement("kbd");
+							if (useSymbols) {
+								kbd.textContent = modifier.symbol;
+							} else {
+								kbd.textContent = modifier.name;
+							}
+							li.appendChild(kbd);
+							li.appendChild(document.createTextNode("+"));
+						}
+					}
+					if (showNonModifier) {
+						const kbd = document.createElement("kbd");
+						kbd.textContent = keyNames[event.code] || event.key;
+						li.appendChild(kbd);
+					}
+					li.dataset.keyCombo = li.textContent;
+					li.dataset.repetitions = 1;
+				}
+
+				// TODO: stagger fade outs by a minimum amount to make it feel calmer
+				function fadeOutEventually(li) {
+					if (li.dataset.timerId) {
+						clearTimeout(li.dataset.timerId);
+					}
+					li.dataset.timerId = setTimeout(() => {
+						li.style.opacity = 0;
+						setTimeout(() => {
+							li.style.opacity = 0;
+						});
+						setTimeout(() => {
+							li.remove();
+						}, 1000);
+					}, 5000);
+				}
+
+				var modifiersLI = document.createElement("li");
+				var lastKeyComboLI;
+				addEventListener("keydown", function (event) {
+					const isModifier =
+						event.key === "Alt" || event.key === "Control" || event.key === "Meta" || event.key === "Shift";
+					// console.log(event.key, event.code, event.keyCode, event.location, isModifier);
+					if (isModifier) {
+						renderListItem(modifiersLI, event, false);
+						ul.appendChild(modifiersLI);
+						modifiersLI.style.opacity = 1;
+					} else {
+						const li = document.createElement("li");
+						renderListItem(li, event, true);
+						if (
+							lastKeyComboLI &&
+							lastKeyComboLI.dataset.keyCombo === li.dataset.keyCombo &&
+							lastKeyComboLI.style.opacity !== "0"
+						) {
+							if (!event.repeat) {
+								lastKeyComboLI.dataset.repetitions = parseInt(lastKeyComboLI.dataset.repetitions) + 1;
+							}
+							fadeOutEventually(lastKeyComboLI);
+
+							// modifiersLI.remove(); // looks super weird to have the list shift
+							renderListItem(modifiersLI, event, true);
+							modifiersLI.style.opacity = 0;
+						} else {
+							lastKeyComboLI = li;
+							ul.appendChild(li);
+							fadeOutEventually(li);
+
+							modifiersLI.remove();
+
+							if (ul.childElementCount > maxListLength) {
+								ul.firstElementChild.remove();
+							}
+						}
+					}
+				});
+				addEventListener("keyup", function (event) {
+					const anyModifiers = modifiers.some((modifier) => event[modifier.prop]);
+					if (!anyModifiers) {
+						modifiersLI.style.opacity = 0;
+					} else {
+						modifiersLI.style.opacity = 1;
+						renderListItem(modifiersLI, event, false);
+					}
+				});
+				addEventListener("blur", function (event) {
+					modifiersLI.style.opacity = 0;
+				});
+			}
+		</script>
+		<style>
+			.keystrokes {
+				position: fixed;
+				bottom: 0;
+				left: 0;
+				pointer-events: none;
+				z-index: 999999999;
+				list-style: none;
+				padding: 10px;
+				mask-image: linear-gradient(transparent, 5%, rgba(0, 0, 0, 1));
+				-webkit-mask-image: linear-gradient(transparent, 5%, rgba(0, 0, 0, 1));
+			}
+			.keystrokes li {
+				color: white;
+				font-size: 1.5em;
+				text-shadow: 0 2px 0 black, 0 0 1px black, 0 0 1px black, 0 0 2px black;
+				transition: opacity 0.8s ease-out;
+			}
+			.keystrokes li:not(:last-child) {
+				margin-bottom: 5px;
+			}
+			.keystrokes li:not([data-repetitions="1"])::after {
+				content: "×" attr(data-repetitions);
+				display: inline-block;
+				border-radius: 1em;
+				background: rgba(187, 187, 187, 0.8);
+				color: black;
+				text-shadow: none;
+				margin-left: 20px;
+				font-size: 0.8em;
+				padding: 2px 5px;
+				box-shadow: 0 0 1px black, 0 2px 0 rgba(0, 0, 0, 0.4);
+			}
+		</style>
+	</body>
+</html>
